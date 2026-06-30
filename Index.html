@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>HP Mobilidade · Acompanhamento Evolutivo Tarifa</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  :root{
+    --blue:#002577; --blue-mid:#003BC1; --green:#00CFA2;
+    --text:#1a1a2e; --muted:#5a6a8a; --muted2:#8295A6;
+    --border:#c0d4ff; --bg:#f4f7ff; --surface:#fff;
+    --danger:#F2685A; --amber:#F2B65A;
+    --mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,monospace;
+    --sans:"Inter Tight",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+
+  html,body{margin:0;padding:0;background:#fff;font-family:var(--sans);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;}
+
+  /* ── HEADER HP ── */
+  .hp-header{background:var(--blue);position:sticky;top:0;z-index:100;}
+  .hp-header-inner{display:flex;align-items:center;justify-content:space-between;padding:6px 32px;border-bottom:1px solid rgba(0,83,255,.3);}
+  .hp-logo img{height:48px;width:auto;display:block;}
+  .hp-title{text-align:right;}
+  .hp-title h1{font-size:12px;font-weight:600;color:#fff;letter-spacing:.06em;text-transform:uppercase;}
+  .hp-title p{font-size:10px;color:#99BCFA;}
+  .hp-bar{height:3px;background:linear-gradient(90deg,#00CFA2 0%,#003BC1 60%,#002577 100%);}
+
+  /* ── LAYOUT ── */
+  .page{width:100%;padding:0 32px 80px;max-width:1400px;margin:0 auto;}
+
+  /* ── INTRO ── */
+  .intro{padding:28px 0 20px;position:relative;overflow:hidden;}
+  .eyebrow{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--blue-mid);margin-bottom:10px;}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--blue-mid);box-shadow:0 0 8px rgba(0,59,193,.5);}
+  .intro h2{font-size:24px;font-weight:700;letter-spacing:-.02em;color:var(--blue);margin-bottom:6px;}
+  .intro p{font-size:13.5px;color:var(--muted);max-width:680px;}
+  .intro p b{color:var(--text);}
+
+  /* ── VIGENCIA SELECTOR ── */
+  .vig-bar{display:flex;align-items:center;gap:16px;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:14px 20px;margin-bottom:20px;box-shadow:0 1px 6px rgba(0,37,119,.05);flex-wrap:wrap;}
+  .vig-bar .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2);font-weight:600;}
+  .vig-bar select{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--blue);font-family:var(--sans);font-weight:600;font-size:13.5px;padding:9px 14px;cursor:pointer;min-width:260px;}
+  .vig-bar select:focus{outline:none;border-color:var(--blue-mid);}
+  .vig-bar .badge-vig{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--green);background:#f0fdf9;border:1px solid var(--green);border-radius:20px;padding:5px 12px;}
+
+  /* ── SECTION LABEL ── */
+  .section-label{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted2);margin:0 0 12px;display:flex;align-items:center;gap:10px;}
+  .section-label::after{content:"";flex:1;height:1px;background:#e0e8ff;}
+
+  /* ── PANELS GRID (Parcela A / B, A1 / Equiv) ── */
+  .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+  .panel{background:#fff;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,37,119,.05);}
+  .panel .head{padding:12px 18px;border-bottom:1px solid #e0e8ff;background:var(--bg);}
+  .panel .head .t{font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.02em;}
+  .panel .head .t.perm{color:var(--blue);}
+  .panel .head .t.temp{color:#b07d10;}
+  .panel .total-strip{display:flex;justify-content:space-between;align-items:center;padding:11px 18px;background:#eef2ff;border-top:1.5px solid var(--border);}
+  .panel .total-strip .lab{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--blue-mid);font-weight:600;}
+  .panel .total-strip .val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--blue);}
+
+  .table-scroll{width:100%;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:420px;}
+  thead th{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);text-align:right;padding:9px 14px;border-bottom:1px solid #e0e8ff;font-weight:600;background:#fafcff;white-space:nowrap;}
+  thead th:first-child,thead th:nth-child(2){text-align:left;}
+  tbody td{font-family:var(--mono);font-size:12px;padding:9px 14px;text-align:right;border-bottom:1px solid #f0f4ff;font-variant-numeric:tabular-nums;color:var(--text);white-space:nowrap;}
+  tbody td:first-child{text-align:left;color:var(--muted);font-weight:600;}
+  tbody td:nth-child(2){text-align:left;color:var(--text);}
+  tbody tr:hover{background:var(--bg);}
+  tbody tr.total td{border-bottom:none;font-weight:700;border-top:1.5px solid var(--border);background:#eef2ff;color:var(--blue);}
+
+  /* ── COMPOSICAO TARIFA (full width 3-col) ── */
+  .comp-grid{display:grid;grid-template-columns:1.3fr 0.85fr 0.85fr;gap:16px;margin-bottom:20px;align-items:stretch;}
+  @media(max-width:1100px){.comp-grid{grid-template-columns:1fr;}}
+
+  /* donut */
+  .donut-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;}
+  .donut-wrap svg{max-width:220px;}
+  .donut-center{font-family:var(--mono);text-anchor:middle;}
+  .donut-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
+  .donut-legend .li{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+  .donut-legend .sw{width:10px;height:10px;border-radius:3px;}
+
+  /* equivalencia box */
+  .kpis-mini{display:flex;flex-direction:column;gap:0;}
+  .kpis-mini table{min-width:0;}
+  .kpis-mini thead th{font-size:8.5px;}
+  .kpis-mini tbody td{font-size:11.5px;padding:8px 12px;}
+  .aliquotas-box{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-top:14px;box-shadow:0 1px 6px rgba(0,37,119,.05);}
+  .aliquotas-box .t{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px;}
+  .aliquotas-box .row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;color:var(--muted);padding:4px 0;border-bottom:1px dashed #e0e8ff;}
+  .aliquotas-box .row:last-child{border-bottom:none;}
+  .aliquotas-box .row b{color:var(--text);}
+
+  /* tarifa total destaque */
+  tr.tarifa-total td{background:#ffe9c2!important;color:#7a4a00!important;font-weight:700!important;border-top:2px solid var(--amber)!important;}
+
+  /* ── KPI STRIP ── */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+  .kpi{background:#fff;border:1.5px solid var(--border);border-radius:11px;padding:14px 15px;box-shadow:0 1px 4px rgba(0,37,119,.05);}
+  .kpi .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);}
+  .kpi .v{font-family:var(--mono);font-size:18px;font-weight:600;margin-top:7px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--blue);}
+  .kpi .s{font-size:10.5px;color:var(--muted);margin-top:3px;}
+  .kpi.accent .v{color:var(--green);}
+  @media(max-width:720px){.kpis{grid-template-columns:1fr 1fr;}}
+
+  /* ── EVOLUTIVO CHART CARD ── */
+  .tablecard{background:#fff;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,37,119,.05);margin-bottom:16px;}
+  .tablecard .head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e0e8ff;flex-wrap:wrap;gap:8px;}
+  .tablecard .head .t{font-size:14px;font-weight:600;color:var(--blue);}
+  .tablecard .head .t span{color:var(--muted2);font-weight:400;font-size:12px;margin-left:6px;}
+  .chart-area{padding:20px;}
+
+  /* ── TABELA DINAMICA (Tabela aba) ── */
+  details.params{margin-bottom:16px;background:#fff;border:1.5px solid var(--border);border-radius:12px;box-shadow:0 1px 6px rgba(0,37,119,.05);}
+  details.params summary{cursor:pointer;list-style:none;padding:13px 18px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;user-select:none;font-weight:600;}
+  details.params summary::-webkit-details-marker{display:none;}
+  details.params summary .chev{transition:transform .2s;color:var(--blue-mid);}
+  details.params[open] summary .chev{transform:rotate(90deg);}
+  .params-body{padding:0 18px 18px;}
+  .prev-scroll{max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:10px;}
+  .prev-scroll table{min-width:760px;}
+  .prev-scroll table thead th{position:sticky;top:0;background:var(--bg);font-size:9px;padding:8px 10px;white-space:nowrap;}
+  .prev-scroll table tbody td{padding:7px 10px;font-size:11px;white-space:nowrap;}
+
+  /* ── FORM DE ENTRADA DE DADOS (CRUD Base) ── */
+  .form-card{background:#fff;border:1.5px solid var(--border);border-radius:12px;box-shadow:0 2px 8px rgba(0,37,119,.05);margin-bottom:16px;overflow:hidden;}
+  .form-card .head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e0e8ff;flex-wrap:wrap;gap:8px;background:var(--bg);}
+  .form-card .head .t{font-size:14px;font-weight:700;color:var(--blue);}
+  .form-card .head .t span{color:var(--muted2);font-weight:400;font-size:11.5px;margin-left:6px;}
+  .form-body{padding:18px 20px;}
+  .form-grid{display:grid;grid-template-columns:1.3fr 0.8fr 1.6fr 0.8fr auto;gap:12px;align-items:end;}
+  @media(max-width:980px){.form-grid{grid-template-columns:1fr 1fr;}}
+  .field label{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:5px;}
+  .field input,.field select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--sans);font-size:13px;padding:9px 10px;}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--blue-mid);}
+  .field .hint{font-size:10px;color:var(--muted2);margin-top:4px;}
+  button.act{font-family:var(--sans);font-size:13px;font-weight:600;border-radius:9px;border:1px solid transparent;padding:10px 18px;cursor:pointer;transition:.15s;white-space:nowrap;}
+  .btn-primary{background:var(--green);color:var(--blue);border-color:var(--green);}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-ghost{background:transparent;border-color:var(--border);color:var(--text);}
+  .btn-ghost:hover{border-color:var(--blue-mid);color:var(--blue-mid);}
+  .btn-danger{background:#fff;border-color:var(--danger);color:var(--danger);}
+  .btn-danger:hover{background:#fff5f4;}
+  .form-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center;}
+  .form-status{font-family:var(--mono);font-size:11.5px;color:var(--green);opacity:0;transition:opacity .2s;}
+  .form-status.show{opacity:1;}
+  .form-status.err{color:var(--danger);}
+  .row-btn{cursor:pointer;background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:10.5px;font-family:var(--mono);color:var(--muted);transition:.15s;margin-right:4px;}
+  .row-btn:hover{border-color:var(--blue-mid);color:var(--blue-mid);}
+  .row-btn.del:hover{border-color:var(--danger);color:var(--danger);}
+  .edit-banner{display:none;align-items:center;gap:8px;background:#fff7e8;border:1px solid var(--amber);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#8a5d00;}
+  .edit-banner.show{display:flex;}
+  .dl-row{display:flex;gap:10px;flex-wrap:wrap;}
+  input[type=file]{display:none;}
+
+  /* ── FOOTER ── */
+  footer{padding-top:18px;border-top:1px solid #e0e8ff;color:var(--muted2);font-size:11px;font-family:var(--mono);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+
+  @media(max-width:1100px){
+    .pgrid{grid-template-columns:1fr;}
+  }
+  @media(max-width:720px){
+    .page{padding:0 16px 60px;}
+    .hp-header-inner{padding:6px 16px;}
+    .intro h2{font-size:19px;}
+  }
+
+
+  /* ── NAVEGAÇÃO POR TELAS ── */
+  .nav-dashboard{display:flex;gap:12px;align-items:center;margin:20px 0 8px;position:sticky;top:61px;z-index:90;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);padding:10px 0;border-bottom:1px solid #e0e8ff;}
+  .nav-btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--blue);border:1.5px solid var(--border);padding:11px 20px;border-radius:12px;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:13px;box-shadow:0 1px 6px rgba(0,37,119,.05);transition:.18s ease;}
+  .nav-btn:hover{border-color:var(--blue-mid);transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,37,119,.10);}
+  .nav-btn.active{background:linear-gradient(135deg,var(--blue-mid),var(--blue));color:#fff;border-color:var(--blue-mid);box-shadow:0 8px 20px rgba(0,59,193,.20);}
+  .nav-btn.active .nav-ico{background:var(--green);color:var(--blue);}
+  .nav-ico{width:22px;height:22px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;background:var(--bg);font-size:12px;}
+  .screen-page{display:none;animation:fadeIn .18s ease;}
+  .screen-page.active{display:block;}
+  @keyframes fadeIn{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  .cadastro-title{padding:26px 0 18px;}
+  .cadastro-title h2{font-size:22px;font-weight:700;color:var(--blue);letter-spacing:-.02em;margin-bottom:6px;}
+  .cadastro-title p{font-size:13px;color:var(--muted);max-width:760px;}
+  @media(max-width:720px){.nav-dashboard{top:61px;gap:8px;overflow-x:auto}.nav-btn{padding:10px 14px;white-space:nowrap}}
+
+
+  /* ─────────────────────────────────────────────
+     AJUSTE FINAL · FULL WIDTH / DASHBOARD PREMIUM
+     Mantém qualidade visual e aproveita 100% da tela
+  ───────────────────────────────────────────── */
+  html,body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+    background:linear-gradient(180deg,#f7faff 0%,#ffffff 36%);
+  }
+
+  .hp-header-inner{
+    width:100%;
+    max-width:none;
+    padding-left:clamp(18px,1.8vw,42px);
+    padding-right:clamp(18px,1.8vw,42px);
+  }
+
+  .page{
+    width:100%;
+    max-width:none;
+    margin:0;
+    padding-left:clamp(18px,1.7vw,42px);
+    padding-right:clamp(18px,1.7vw,42px);
+    padding-bottom:clamp(48px,4vw,88px);
+  }
+
+  .nav-dashboard{
+    width:100%;
+    margin:18px 0 10px;
+    padding:12px clamp(0px,.2vw,6px);
+  }
+
+  .intro{
+    width:100%;
+    padding:clamp(22px,2vw,36px) 0 clamp(16px,1.4vw,24px);
+  }
+
+  .intro h2{
+    font-size:clamp(24px,1.8vw,34px);
+  }
+
+  .intro p,
+  .cadastro-title p{
+    max-width:980px;
+    font-size:clamp(13px,.82vw,15px);
+  }
+
+  .vig-bar,
+  .panel,
+  .tablecard,
+  .form-card,
+  details.params,
+  .aliquotas-box,
+  .kpi{
+    box-shadow:0 8px 26px rgba(0,37,119,.07);
+  }
+
+  .kpis{
+    grid-template-columns:repeat(4,minmax(230px,1fr));
+    gap:clamp(14px,1vw,22px);
+  }
+
+  .kpi{
+    min-height:112px;
+    padding:clamp(16px,1.2vw,22px);
+  }
+
+  .kpi .v{
+    font-size:clamp(20px,1.35vw,28px);
+  }
+
+  .pgrid{
+    grid-template-columns:repeat(2,minmax(520px,1fr));
+    gap:clamp(18px,1.25vw,28px);
+    margin-bottom:clamp(22px,1.8vw,34px);
+  }
+
+  .comp-grid{
+    grid-template-columns:minmax(520px,1.15fr) minmax(380px,.9fr) minmax(380px,.9fr);
+    gap:clamp(18px,1.25vw,28px);
+    margin-bottom:clamp(24px,2vw,38px);
+  }
+
+  .tablecard{
+    width:100%;
+    margin-bottom:clamp(20px,1.5vw,32px);
+  }
+
+  .tablecard .head,
+  .form-card .head{
+    padding:clamp(16px,1.2vw,24px) clamp(20px,1.5vw,30px);
+  }
+
+  .chart-area{
+    width:100%;
+    min-height:520px;
+    padding:clamp(18px,1.4vw,28px);
+  }
+
+  .chart-area svg{
+    width:100%!important;
+    height:min(62vh,620px)!important;
+    min-height:480px;
+    display:block;
+  }
+
+  .table-scroll,
+  .prev-scroll{
+    width:100%;
+  }
+
+  .prev-scroll{
+    max-height:min(68vh,760px);
+  }
+
+  table{
+    width:100%;
+  }
+
+  .form-grid{
+    grid-template-columns:minmax(320px,1.25fr) minmax(160px,.45fr) minmax(380px,1.55fr) minmax(170px,.5fr) auto;
+    gap:clamp(12px,.9vw,20px);
+  }
+
+  .cadastro-title{
+    padding:clamp(24px,2vw,38px) 0 clamp(18px,1.4vw,26px);
+  }
+
+  .cadastro-title h2{
+    font-size:clamp(24px,1.7vw,32px);
+  }
+
+  footer{
+    width:100%;
+    margin-top:26px;
+  }
+
+  @media(min-width:1800px){
+    .page{padding-left:48px;padding-right:48px;}
+    .chart-area svg{height:640px!important;}
+    .prev-scroll{max-height:820px;}
+  }
+
+  @media(max-width:1280px){
+    .pgrid{grid-template-columns:1fr;}
+    .comp-grid{grid-template-columns:1fr;}
+    .form-grid{grid-template-columns:1fr 1fr;}
+  }
+
+  @media(max-width:820px){
+    .page{padding-left:14px;padding-right:14px;}
+    .kpis{grid-template-columns:1fr 1fr;}
+    .form-grid{grid-template-columns:1fr;}
+    .chart-area{min-height:360px;}
+    .chart-area svg{height:380px!important;min-height:360px;}
+    .vig-bar .badge-vig{margin-left:0;}
+  }
+
+  @media(max-width:540px){
+    .kpis{grid-template-columns:1fr;}
+    .nav-dashboard{overflow-x:auto;}
+    .nav-btn{white-space:nowrap;}
+  }
+
+
+
+  /* ── MOBILE SAFE / OFFLINE SAFE ── */
+  html, body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+    -webkit-text-size-adjust:100%;
+    text-size-adjust:100%;
+  }
+
+  body{
+    font-family:Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+
+  .mobile-warning{
+    display:none;
+    margin:12px 0 0;
+    padding:10px 12px;
+    border:1px solid var(--amber);
+    border-radius:10px;
+    background:#fff7e8;
+    color:#7a4a00;
+    font-size:12px;
+    line-height:1.35;
+  }
+
+  .mobile-warning.show{display:block;}
+
+  .page{
+    max-width:none!important;
+    width:100%!important;
+  }
+
+  .table-scroll,
+  .prev-scroll,
+  .chart-area{
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .chart-area{
+    overflow-x:auto;
+    overflow-y:hidden;
+  }
+
+  #evoChart,
+  #donutSvg{
+    display:block;
+  }
+
+  @media(max-width:900px){
+    .hp-header-inner{
+      gap:12px;
+      align-items:center;
+    }
+    .hp-logo img{
+      height:38px;
+      max-width:160px;
+      object-fit:contain;
+    }
+    .hp-title h1{font-size:10px;}
+    .hp-title p{font-size:9px;}
+    .page{
+      padding-left:12px!important;
+      padding-right:12px!important;
+      padding-bottom:36px!important;
+    }
+    .nav-dashboard{
+      top:50px!important;
+      margin:12px 0 8px!important;
+      padding:8px 0!important;
+      overflow-x:auto;
+      scrollbar-width:none;
+    }
+    .nav-dashboard::-webkit-scrollbar{display:none;}
+    .nav-btn{
+      flex:0 0 auto;
+      min-height:40px;
+      padding:10px 14px!important;
+    }
+    .intro{padding:18px 0 14px!important;}
+    .intro h2{font-size:20px!important;line-height:1.15;}
+    .intro p{font-size:12.5px!important;}
+    .vig-bar{
+      gap:10px!important;
+      padding:12px!important;
+    }
+    .vig-bar select{
+      width:100%!important;
+      min-width:0!important;
+      font-size:13px!important;
+    }
+    .vig-bar .badge-vig{
+      margin-left:0!important;
+      width:100%;
+      text-align:center;
+    }
+    .kpis{
+      grid-template-columns:1fr 1fr!important;
+      gap:10px!important;
+    }
+    .kpi{
+      min-height:96px!important;
+      padding:12px!important;
+    }
+    .kpi .v{font-size:18px!important;}
+    .pgrid,
+    .comp-grid,
+    .form-grid{
+      grid-template-columns:1fr!important;
+      gap:12px!important;
+    }
+    .panel,
+    .tablecard,
+    .form-card,
+    .aliquotas-box{
+      border-radius:10px!important;
+    }
+    .table-scroll,
+    .prev-scroll{
+      overflow-x:auto!important;
+      max-width:100%!important;
+    }
+    table{
+      min-width:680px!important;
+    }
+    .kpis-mini table{min-width:420px!important;}
+    .chart-area{
+      min-height:320px!important;
+      padding:12px!important;
+    }
+    .chart-area svg#evoChart{
+      width:980px!important;
+      height:360px!important;
+      min-height:360px!important;
+      max-width:none!important;
+    }
+    .donut-wrap svg#donutSvg{
+      width:min(230px,80vw)!important;
+      height:auto!important;
+      min-height:0!important;
+    }
+    .form-actions,.dl-row{
+      display:grid!important;
+      grid-template-columns:1fr!important;
+    }
+    button.act,.form-actions label.act{
+      width:100%;
+      text-align:center;
+    }
+    footer{
+      font-size:10px!important;
+    }
+  }
+
+  @media(max-width:520px){
+    .kpis{grid-template-columns:1fr!important;}
+    .hp-title{text-align:left;}
+    .hp-header-inner{flex-direction:column;align-items:flex-start!important;}
+    .nav-dashboard{top:90px!important;}
+    .section-label{letter-spacing:.12em;}
+  }
+
+</style>
+</head>
+<body>
+<!-- HP HEADER -->
+<div class="hp-header">
+<div class="hp-header-inner">
+<div class="hp-logo">
+<img alt="HP Mobilidade" src="data:image/png;base64,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"/>
+</div>
+<div class="hp-title">
+<h1>HP Mobilidade</h1>
+<p>Painel de Acompanhamento Tarifário</p>
+</div>
+</div>
+<div class="hp-bar"></div>
+</div>
+<div class="page"><div class="nav-dashboard"><button class="nav-btn active" id="btnDashboard" onclick='mostrarTela("dashboard")' type="button"><span class="nav-ico">📊</span> Dashboard</button><button class="nav-btn" id="btnCadastro" onclick='mostrarTela("cadastro")' type="button"><span class="nav-ico">🗂</span> Cadastro Base</button></div><div id="mobileWarning" class="mobile-warning show">Versão iPhone/WhatsApp: dados e gráficos principais já ficam pré-renderizados no HTML. Para usar filtros, botões e edição, abra pelo Safari/Chrome fora do visualizador do WhatsApp.</div><noscript><div class="mobile-warning show">JavaScript desativado: o Dashboard principal está visível com dados estáticos. As funções de edição e seleção precisam de navegador.</div></noscript><div class="screen-page active" id="dashboardPage"><div class="intro">
+<div class="eyebrow"><span class="dot"></span> RMTC · TARIFA · COMPOSIÇÃO</div>
+<h2>Acompanhamento Evolutivo Tarifa</h2>
+<p>Painel reproduz as fórmulas da planilha <b>Acompanhamento_Histórico_Tarifa.xlsx</b> (abas <b>Base</b> e <b>Resumo</b>):
+    selecione a vigência para recalcular Parcela A, Parcela A1, Parcela B, Tarifa para Equivalência Tarifária e a Composição da Tarifa.</p>
+</div><div class="vig-bar">
+<span class="lbl">Vigência</span>
+<select id="vigSelect"><option value="01/03/2026 - Atual" selected>01/03/2026 - Atual</option><option value="01/02/2026 a 28/02/2026">01/02/2026 a 28/02/2026</option><option value="01/01/2026 a 31/01/2026">01/01/2026 a 31/01/2026</option><option value="01/07/2025 a 31/12/2025">01/07/2025 a 31/12/2025</option><option value="01/05/2025 a 30/06/2025">01/05/2025 a 30/06/2025</option><option value="01/01/2025 a 30/04/2025">01/01/2025 a 30/04/2025</option><option value="02/09/2024 a 31/12/2024">02/09/2024 a 31/12/2024</option><option value="01/02/2024 a 01/09/2024">01/02/2024 a 01/09/2024</option><option value="29/12/2023 a 31/01/2024">29/12/2023 a 31/01/2024</option><option value="01/04/2023 a 28/12/2023">01/04/2023 a 28/12/2023</option></select>
+<span class="badge-vig" id="vigBadge">01/03/2026 - Atual</span>
+</div><div class="kpis">
+<div class="kpi">
+<div class="k">Tarifa Usuário</div>
+<div class="v" id="kpiUsuario">R$ 4,3000</div>
+<div class="s">Classe A1 · valor bruto pago pelo usuário</div>
+</div>
+<div class="kpi">
+<div class="k">Tarifa Total (Bruta)</div>
+<div class="v" id="kpiTarifaTotal">R$ 12,0016</div>
+<div class="s">Tar. Remuneração + Tar. Usuário</div>
+</div>
+<div class="kpi accent">
+<div class="k">Tarifa Líquida HP</div>
+<div class="v" id="kpiTarifaLiq">R$ 7,9569</div>
+<div class="s">Após alíquotas Redemob/PPC/CPRB</div>
+</div>
+<div class="kpi">
+<div class="k">% Complemento</div>
+<div class="v" id="kpiPctComplemento">64,17%</div>
+<div class="s">Participação do complemento na tarifa</div>
+</div>
+</div><div class="section-label">Parcela A · Parcela B</div><div class="pgrid">
+<div class="panel">
+<div class="head"><span class="t perm">Parcela A <span style="color:var(--muted2);font-weight:400;font-size:11px;">— Permanente</span></span></div>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Classe</th><th>Descrição</th><th>Valor</th></tr></thead>
+<tbody id="tblParcelaA"><tr><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>R$ 0,3583</td></tr><tr><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>R$ 0,1965</td></tr><tr><td>A3</td><td>Renovação da frota</td><td>R$ 1,3385</td></tr><tr><td>A4</td><td>Adicional Onibus Elétrico</td><td>R$ 0,7592</td></tr></tbody>
+</table>
+</div>
+<div class="total-strip"><span class="lab">Total</span><span class="val" id="totParcelaA">R$ 2,6525</span></div>
+</div>
+<div class="panel">
+<div class="head"><span class="t temp">Parcela B <span style="color:var(--muted2);font-weight:400;font-size:11px;">— Temporário</span></span></div>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Classe</th><th>Descrição</th><th>Valor</th></tr></thead>
+<tbody id="tblParcelaB"><tr><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>R$ 0,0162</td></tr><tr><td>B1</td><td>Obras BRT Leste - Oeste</td><td>R$ 0,0632</td></tr><tr><td>B2</td><td>Investimentos em garagens</td><td>R$ 0,5653</td></tr><tr><td>B3</td><td>Reserva financeira - baterias</td><td>R$ 0,2296</td></tr></tbody>
+</table>
+</div>
+<div class="total-strip"><span class="lab">Total</span><span class="val" id="totParcelaB">R$ 0,8743</span></div>
+</div>
+</div><div class="section-label">Parcela A1 · Tarifa para Equivalência Tarifária</div><div class="pgrid">
+<div class="panel">
+<div class="head"><span class="t perm">Parcela A1 <span style="color:var(--muted2);font-weight:400;font-size:11px;">— Permanente</span></span></div>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Classe</th><th>Descrição</th><th>Valor</th></tr></thead>
+<tbody id="tblParcelaA1"><tr><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>R$ 4,1748</td></tr><tr><td>A1</td><td>Tarifa Usuario</td><td>R$ 4,3000</td></tr></tbody>
+</table>
+</div>
+<div class="total-strip"><span class="lab">Total</span><span class="val" id="totParcelaA1">R$ 8,4748</span></div>
+</div>
+<div class="panel">
+<div class="head"><span class="t perm">Tarifa para Equivalência Tarifária</span></div>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Classe</th><th>Descrição</th><th>Valor</th></tr></thead>
+<tbody id="tblEquivalencia"><tr><td>A1</td><td>Tar. de Remuneração e Tar. Usuario</td><td>R$ 8,4748</td></tr><tr><td>Demais A's</td><td>A2, A3 e A4</td><td>R$ 2,6525</td></tr></tbody>
+</table>
+</div>
+<div class="total-strip"><span class="lab">Total</span><span class="val" id="totEquivalencia">R$ 11,1273</span></div>
+</div>
+</div><div class="section-label">Composição Tarifa</div><div class="comp-grid">
+<!-- Tabela composição -->
+<div class="panel">
+<div class="head"><span class="t">Composição Tarifa</span></div>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Classe</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>%</th></tr></thead>
+<tbody id="tblComposicao"><tr><td>A1</td><td>Tarifa Usuario</td><td>Usuário</td><td>R$ 4,3000</td><td>35,83%</td></tr><tr><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>Complemento</td><td>R$ 4,1748</td><td rowspan="9" style="vertical-align:middle;background:#f8faff;">64,17%</td></tr><tr><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>Complemento</td><td>R$ 0,3583</td></tr><tr><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>Complemento</td><td>R$ 0,1965</td></tr><tr><td>A3</td><td>Renovação da frota</td><td>Complemento</td><td>R$ 1,3385</td></tr><tr><td>A4</td><td>Adicional Onibus Elétrico</td><td>Complemento</td><td>R$ 0,7592</td></tr><tr><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>Complemento</td><td>R$ 0,0162</td></tr><tr><td>B1</td><td>Obras BRT Leste - Oeste</td><td>Complemento</td><td>R$ 0,0632</td></tr><tr><td>B2</td><td>Investimentos em garagens</td><td>Complemento</td><td>R$ 0,5653</td></tr><tr><td>B3</td><td>Reserva financeira - baterias</td><td>Complemento</td><td>R$ 0,2296</td></tr><tr class="total"><td colspan="3">Total</td><td>R$ 12,0016</td><td>100,00%</td></tr></tbody>
+</table>
+</div>
+</div>
+<!-- Donut -->
+<div class="panel">
+<div class="head"><span class="t">Composição da Tarifa</span></div>
+<div class="donut-wrap">
+<svg id="donutSvg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="none" stroke="#dfe6f5" stroke-width="26"/>
+    <circle cx="100" cy="100" r="80" fill="none" stroke="#8295A6" stroke-width="26" stroke-dasharray="180.09396627697788 322.560858297389" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+    <circle cx="100" cy="100" r="80" fill="none" stroke="#003BC1" stroke-width="26" stroke-dasharray="322.560858297389 180.09396627697788" stroke-dashoffset="-180.09396627697788" transform="rotate(-90 100 100)"/>
+    <text x="100" y="86" class="donut-center" font-size="9" fill="#8295A6" text-anchor="middle">TAR. TOTAL</text>
+    <text x="100" y="102" class="donut-center" font-size="15" font-weight="700" fill="#002577" text-anchor="middle">R$ 12,0016</text>
+    <text x="100" y="118" class="donut-center" font-size="9" fill="#8295A6" text-anchor="middle">TAR. LIQ.</text>
+    <text x="100" y="134" class="donut-center" font-size="12" font-weight="600" fill="#00CFA2" text-anchor="middle">R$ 7,9569</text></svg>
+<div class="donut-legend">
+<div class="li"><span class="sw" style="background:#8295A6"></span>Usuário</div>
+<div class="li"><span class="sw" style="background:var(--blue-mid)"></span>Complemento</div>
+</div>
+</div>
+</div>
+<!-- Equivalência Tarifária + alíquotas -->
+<div>
+<div class="panel">
+<div class="head"><span class="t">Equivalência Tarifária (Vl Liq HP)</span></div>
+<div class="table-scroll kpis-mini">
+<table>
+<thead><tr><th>Tipo</th><th>Vl Bruto</th><th>%HP</th><th>Vl Liq HP</th></tr></thead>
+<tbody id="tblEquivHP"><tr><td>Usuario</td><td>R$ 4,3000</td><td>83,80%</td><td>R$ 3,6034</td></tr><tr><td>Complemento</td><td>R$ 4,1748</td><td>83,80%</td><td>R$ 3,4985</td></tr><tr><td>Parcela A</td><td>R$ 2,6525</td><td>0,00%</td><td>R$ 0,0000</td></tr><tr><td>Parcela B</td><td>R$ 0,8743</td><td>97,80%</td><td>R$ 0,8551</td></tr><tr class="tarifa-total"><td>Tarifa Total</td><td>R$ 12,0016</td><td>-</td><td>R$ 7,9569</td></tr></tbody>
+</table>
+</div>
+</div>
+<div class="aliquotas-box">
+<div class="t">Alíquotas aplicadas</div>
+<div class="row"><span>Redemob — Tar. Usuário</span><b>6%</b></div>
+<div class="row"><span>Redemob — Tar. Remuneração</span><b>14%</b></div>
+<div class="row"><span>PPC — Todas tarifas</span><b>1%</b></div>
+<div class="row"><span>CPRB — Todas as tarifas A</span><b>1,20%</b></div>
+</div>
+</div>
+</div><div class="section-label">Evolutivo Histórico</div><div class="tablecard">
+<div class="head">
+<div class="t">Evolutivo Histórico Tarifa RMTC <span>Usuário + Complemento + Parcela B, por vigência</span></div>
+</div>
+<div class="chart-area">
+<svg id="evoChart" style="width:100%;height:auto;font-family:var(--mono);" viewBox="0 0 1200 460"><line x1="70" y1="390.0" x2="1170" y2="390.0" stroke="#eef2ff" stroke-width="1"/><text x="60" y="394.0" font-size="10" fill="#8295A6" text-anchor="end">R$ 0.00</text><line x1="70" y1="300.0" x2="1170" y2="300.0" stroke="#eef2ff" stroke-width="1"/><text x="60" y="304.0" font-size="10" fill="#8295A6" text-anchor="end">R$ 2.92</text><line x1="70" y1="210.0" x2="1170" y2="210.0" stroke="#eef2ff" stroke-width="1"/><text x="60" y="214.0" font-size="10" fill="#8295A6" text-anchor="end">R$ 5.85</text><line x1="70" y1="120.0" x2="1170" y2="120.0" stroke="#eef2ff" stroke-width="1"/><text x="60" y="124.0" font-size="10" fill="#8295A6" text-anchor="end">R$ 8.77</text><line x1="70" y1="30.0" x2="1170" y2="30.0" stroke="#eef2ff" stroke-width="1"/><text x="60" y="34.0" font-size="10" fill="#8295A6" text-anchor="end">R$ 11.70</text><rect x="94.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="125.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="94.75" y="156.46153254297496" width="60.50000000000001" height="101.19938703410425" fill="#003BC1" rx="2"/><text x="125.0" y="211.06122606002708" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 3.2882</text><text x="125.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">01/04/2023 a 28/12/2023</text><rect x="204.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="235.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="204.75" y="152.27284676493784" width="60.50000000000001" height="105.38807281214136" fill="#003BC1" rx="2"/><text x="235.0" y="208.96688317100853" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 3.4243</text><text x="235.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">29/12/2023 a 31/01/2024</text><rect x="314.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="345.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="314.75" y="152.27284676493784" width="60.50000000000001" height="105.38807281214136" fill="#003BC1" rx="2"/><text x="345.0" y="208.96688317100853" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 3.4243</text><rect x="314.75" y="122.55810673044247" width="60.50000000000001" height="29.71474003449536" fill="#00CFA2" rx="2"/><text x="345.0" y="141.41547674769015" font-size="9.5" fill="#002577" text-anchor="middle" font-weight="700">R$ 0.9655</text><text x="345.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">01/02/2024 a 01/09/2024</text><rect x="424.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="455.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="424.75" y="152.27284676493784" width="60.50000000000001" height="105.38807281214136" fill="#003BC1" rx="2"/><text x="455.0" y="208.96688317100853" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 3.4243</text><rect x="424.75" y="120.314497669319" width="60.50000000000001" height="31.958349095618836" fill="#00CFA2" rx="2"/><text x="455.0" y="140.29367221712843" font-size="9.5" fill="#002577" text-anchor="middle" font-weight="700">R$ 1.0384</text><text x="455.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">02/09/2024 a 31/12/2024</text><rect x="534.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="565.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="534.75" y="136.67837884626482" width="60.50000000000001" height="120.98254073081438" fill="#003BC1" rx="2"/><text x="565.0" y="201.169649211672" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 3.9310</text><rect x="534.75" y="102.73802119733526" width="60.50000000000001" height="33.940357648929556" fill="#00CFA2" rx="2"/><text x="565.0" y="123.70820002180004" font-size="9.5" fill="#002577" text-anchor="middle" font-weight="700">R$ 1.1028</text><text x="565.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">01/01/2025 a 30/04/2025</text><rect x="644.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="675.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="644.75" y="136.67837884626482" width="60.50000000000001" height="120.98254073081438" fill="#003BC1" rx="2"/><text x="675.0" y="201.169649211672" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 3.9310</text><rect x="644.75" y="102.73802119733526" width="60.50000000000001" height="33.940357648929556" fill="#00CFA2" rx="2"/><text x="675.0" y="123.70820002180004" font-size="9.5" fill="#002577" text-anchor="middle" font-weight="700">R$ 1.1028</text><text x="675.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">01/05/2025 a 30/06/2025</text><rect x="754.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="785.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="754.75" y="136.67837884626482" width="60.50000000000001" height="120.98254073081438" fill="#003BC1" rx="2"/><text x="785.0" y="201.169649211672" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 3.9310</text><rect x="754.75" y="102.73802119733526" width="60.50000000000001" height="33.940357648929556" fill="#00CFA2" rx="2"/><text x="785.0" y="123.70820002180004" font-size="9.5" fill="#002577" text-anchor="middle" font-weight="700">R$ 1.1028</text><text x="785.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">01/07/2025 a 31/12/2025</text><rect x="864.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="895.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="864.75" y="129.17506075158852" width="60.50000000000001" height="128.48585882549068" fill="#003BC1" rx="2"/><text x="895.0" y="197.41799016433384" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.1748</text><rect x="864.75" y="76.95652173913044" width="60.50000000000001" height="52.21853901245808" fill="#00CFA2" rx="2"/><text x="895.0" y="107.06579124535948" font-size="9.5" fill="#002577" text-anchor="middle" font-weight="700">R$ 1.6967</text><text x="895.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">01/01/2026 a 31/01/2026</text><rect x="974.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="1005.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="974.75" y="129.17506075158852" width="60.50000000000001" height="128.48585882549068" fill="#003BC1" rx="2"/><text x="1005.0" y="197.41799016433384" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.1748</text><rect x="974.75" y="109.33343164724967" width="60.50000000000001" height="19.841629104338853" fill="#00CFA2" rx="2"/><text x="1005.0" y="123.25424619941909" font-size="9.5" fill="#002577" text-anchor="middle" font-weight="700">R$ 0.6447</text><text x="1005.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">01/02/2026 a 28/02/2026</text><rect x="1084.75" y="257.6609195770792" width="60.50000000000001" height="132.33908042292083" fill="#8295A6" rx="2"/><text x="1115.0" y="327.8304597885396" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.3000</text><rect x="1084.75" y="129.17506075158852" width="60.50000000000001" height="128.48585882549068" fill="#003BC1" rx="2"/><text x="1115.0" y="197.41799016433384" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ 4.1748</text><rect x="1084.75" y="102.26714028327231" width="60.50000000000001" height="26.90792046831621" fill="#00CFA2" rx="2"/><text x="1115.0" y="119.72110051743041" font-size="9.5" fill="#002577" text-anchor="middle" font-weight="700">R$ 0.8743</text><text x="1115.0" y="408" font-size="8.5" fill="#5a6a8a" text-anchor="middle">01/03/2026 - Atual</text><rect x="70" y="440" width="10" height="10" fill="#8295A6" rx="2"/><text x="86" y="449" font-size="10" fill="#5a6a8a">Usuário</text><rect x="160" y="440" width="10" height="10" fill="#003BC1" rx="2"/><text x="176" y="449" font-size="10" fill="#5a6a8a">Complemento</text><rect x="290" y="440" width="10" height="10" fill="#00CFA2" rx="2"/><text x="306" y="449" font-size="10" fill="#5a6a8a">Parcela B</text></svg>
+</div>
+</div></div><div class="screen-page" id="cadastroPage"><div class="cadastro-title"><h2>Cadastro Base</h2><p>Área para atualização da base de dados, consulta da tabela dinâmica e visualização dos registros utilizados nos cálculos do painel.</p></div><div class="section-label">Atualização da Base de Dados</div><div class="form-card">
+<div class="head">
+<span class="t">Inserir / Atualizar registro <span>vigência, classe, complemento (descrição) e valor — alimenta diretamente os cálculos do painel</span></span>
+</div>
+<div class="form-body">
+<div class="edit-banner" id="editBanner">
+<span>✎ Editando registro existente — ao salvar, o valor anterior será substituído.</span>
+<button class="row-btn" id="cancelEditBtn" type="button">cancelar edição</button>
+</div>
+<div class="form-grid">
+<div class="field">
+<label>Vigência</label>
+<input id="inVigencia" list="vigOptions" placeholder="ex: 01/04/2026 a 30/04/2026"/>
+<datalist id="vigOptions"></datalist>
+<div class="hint">Use o mesmo padrão de texto das vigências existentes ou crie uma nova.</div>
+</div>
+<div class="field">
+<label>Classe</label>
+<select id="inClasse">
+<option value="A1">A1</option>
+<option value="A2">A2</option>
+<option value="A3">A3</option>
+<option value="A4">A4</option>
+<option value="B1">B1</option>
+<option value="B2">B2</option>
+<option value="B3">B3</option>
+</select>
+</div>
+<div class="field">
+<label>Complemento (Descrição)</label>
+<input id="inDescricao" list="descOptions" placeholder="ex: Complemento Tarifa de Remuneração"/>
+<datalist id="descOptions"></datalist>
+</div>
+<div class="field">
+<label>Valor</label>
+<input id="inValor" placeholder="0,0000" step="0.0001" type="number"/>
+</div>
+<div class="field">
+<button class="act btn-primary" id="saveBtn" type="button">Salvar registro</button>
+</div>
+</div>
+<div class="form-actions">
+<span class="form-status" id="formStatus"></span>
+<span style="flex:1"></span>
+<div class="dl-row">
+<button class="act btn-ghost" id="exportBtn" type="button">⤓ Exportar base (JSON)</button>
+<label class="act btn-ghost" for="importFile" style="display:inline-flex;align-items:center;cursor:pointer;">⤒ Importar base (JSON)</label>
+<input accept="application/json" id="importFile" type="file"/>
+<button class="act btn-ghost" id="resetBtn" type="button">↺ Restaurar base original</button>
+</div>
+</div>
+</div>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Vigência</th><th>Classe</th><th>Complemento (Descrição)</th><th>Valor</th><th>Ações</th></tr></thead>
+<tbody id="tblCrud"><tr><td>01/03/2026 - Atual</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.2296</td><td><button class="row-btn" data-act="edit" data-idx="5">editar</button><button class="row-btn del" data-act="del" data-idx="5">excluir</button></td></tr><tr><td>01/03/2026 - Atual</td><td>B2</td><td>Investimentos em garagens</td><td>0.5653</td><td><button class="row-btn" data-act="edit" data-idx="8">editar</button><button class="row-btn del" data-act="del" data-idx="8">excluir</button></td></tr><tr><td>01/03/2026 - Atual</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.0162</td><td><button class="row-btn" data-act="edit" data-idx="6">editar</button><button class="row-btn del" data-act="del" data-idx="6">excluir</button></td></tr><tr><td>01/03/2026 - Atual</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.0632</td><td><button class="row-btn" data-act="edit" data-idx="7">editar</button><button class="row-btn del" data-act="del" data-idx="7">excluir</button></td></tr><tr><td>01/03/2026 - Atual</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7592</td><td><button class="row-btn" data-act="edit" data-idx="1">editar</button><button class="row-btn del" data-act="del" data-idx="1">excluir</button></td></tr><tr><td>01/03/2026 - Atual</td><td>A3</td><td>Renovação da frota</td><td>1.3385</td><td><button class="row-btn" data-act="edit" data-idx="4">editar</button><button class="row-btn del" data-act="del" data-idx="4">excluir</button></td></tr><tr><td>01/03/2026 - Atual</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3583</td><td><button class="row-btn" data-act="edit" data-idx="2">editar</button><button class="row-btn del" data-act="del" data-idx="2">excluir</button></td></tr><tr><td>01/03/2026 - Atual</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1965</td><td><button class="row-btn" data-act="edit" data-idx="3">editar</button><button class="row-btn del" data-act="del" data-idx="3">excluir</button></td></tr><tr><td>01/03/2026 - Atual</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>4.1748</td><td><button class="row-btn" data-act="edit" data-idx="0">editar</button><button class="row-btn del" data-act="del" data-idx="0">excluir</button></td></tr><tr><td>01/03/2026 - Atual</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="9">editar</button><button class="row-btn del" data-act="del" data-idx="9">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="15">editar</button><button class="row-btn del" data-act="del" data-idx="15">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>B2</td><td>Investimentos em garagens</td><td>0.5653</td><td><button class="row-btn" data-act="edit" data-idx="18">editar</button><button class="row-btn del" data-act="del" data-idx="18">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.0162</td><td><button class="row-btn" data-act="edit" data-idx="16">editar</button><button class="row-btn del" data-act="del" data-idx="16">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.0632</td><td><button class="row-btn" data-act="edit" data-idx="17">editar</button><button class="row-btn del" data-act="del" data-idx="17">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7592</td><td><button class="row-btn" data-act="edit" data-idx="11">editar</button><button class="row-btn del" data-act="del" data-idx="11">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A3</td><td>Renovação da frota</td><td>1.3385</td><td><button class="row-btn" data-act="edit" data-idx="14">editar</button><button class="row-btn del" data-act="del" data-idx="14">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3583</td><td><button class="row-btn" data-act="edit" data-idx="12">editar</button><button class="row-btn del" data-act="del" data-idx="12">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1965</td><td><button class="row-btn" data-act="edit" data-idx="13">editar</button><button class="row-btn del" data-act="del" data-idx="13">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>4.1748</td><td><button class="row-btn" data-act="edit" data-idx="10">editar</button><button class="row-btn del" data-act="del" data-idx="10">excluir</button></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="19">editar</button><button class="row-btn del" data-act="del" data-idx="19">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="25">editar</button><button class="row-btn del" data-act="del" data-idx="25">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>B2</td><td>Investimentos em garagens</td><td>0.5653</td><td><button class="row-btn" data-act="edit" data-idx="28">editar</button><button class="row-btn del" data-act="del" data-idx="28">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1451</td><td><button class="row-btn" data-act="edit" data-idx="26">editar</button><button class="row-btn del" data-act="del" data-idx="26">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9863</td><td><button class="row-btn" data-act="edit" data-idx="27">editar</button><button class="row-btn del" data-act="del" data-idx="27">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7592</td><td><button class="row-btn" data-act="edit" data-idx="21">editar</button><button class="row-btn del" data-act="del" data-idx="21">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A3</td><td>Renovação da frota</td><td>1.3385</td><td><button class="row-btn" data-act="edit" data-idx="24">editar</button><button class="row-btn del" data-act="del" data-idx="24">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3583</td><td><button class="row-btn" data-act="edit" data-idx="22">editar</button><button class="row-btn del" data-act="del" data-idx="22">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1965</td><td><button class="row-btn" data-act="edit" data-idx="23">editar</button><button class="row-btn del" data-act="del" data-idx="23">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>4.1748</td><td><button class="row-btn" data-act="edit" data-idx="20">editar</button><button class="row-btn del" data-act="del" data-idx="20">excluir</button></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="29">editar</button><button class="row-btn del" data-act="del" data-idx="29">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="35">editar</button><button class="row-btn del" data-act="del" data-idx="35">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="38">editar</button><button class="row-btn del" data-act="del" data-idx="38">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1414</td><td><button class="row-btn" data-act="edit" data-idx="36">editar</button><button class="row-btn del" data-act="del" data-idx="36">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9614</td><td><button class="row-btn" data-act="edit" data-idx="37">editar</button><button class="row-btn del" data-act="del" data-idx="37">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7360</td><td><button class="row-btn" data-act="edit" data-idx="31">editar</button><button class="row-btn del" data-act="del" data-idx="31">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A3</td><td>Renovação da frota</td><td>1.3385</td><td><button class="row-btn" data-act="edit" data-idx="34">editar</button><button class="row-btn del" data-act="del" data-idx="34">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3467</td><td><button class="row-btn" data-act="edit" data-idx="32">editar</button><button class="row-btn del" data-act="del" data-idx="32">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1901</td><td><button class="row-btn" data-act="edit" data-idx="33">editar</button><button class="row-btn del" data-act="del" data-idx="33">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.9310</td><td><button class="row-btn" data-act="edit" data-idx="30">editar</button><button class="row-btn del" data-act="del" data-idx="30">excluir</button></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="39">editar</button><button class="row-btn del" data-act="del" data-idx="39">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="45">editar</button><button class="row-btn del" data-act="del" data-idx="45">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="48">editar</button><button class="row-btn del" data-act="del" data-idx="48">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1414</td><td><button class="row-btn" data-act="edit" data-idx="46">editar</button><button class="row-btn del" data-act="del" data-idx="46">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9614</td><td><button class="row-btn" data-act="edit" data-idx="47">editar</button><button class="row-btn del" data-act="del" data-idx="47">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7360</td><td><button class="row-btn" data-act="edit" data-idx="41">editar</button><button class="row-btn del" data-act="del" data-idx="41">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A3</td><td>Renovação da frota</td><td>0.8868</td><td><button class="row-btn" data-act="edit" data-idx="44">editar</button><button class="row-btn del" data-act="del" data-idx="44">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3467</td><td><button class="row-btn" data-act="edit" data-idx="42">editar</button><button class="row-btn del" data-act="del" data-idx="42">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1901</td><td><button class="row-btn" data-act="edit" data-idx="43">editar</button><button class="row-btn del" data-act="del" data-idx="43">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.9310</td><td><button class="row-btn" data-act="edit" data-idx="40">editar</button><button class="row-btn del" data-act="del" data-idx="40">excluir</button></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="49">editar</button><button class="row-btn del" data-act="del" data-idx="49">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="55">editar</button><button class="row-btn del" data-act="del" data-idx="55">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="58">editar</button><button class="row-btn del" data-act="del" data-idx="58">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1414</td><td><button class="row-btn" data-act="edit" data-idx="56">editar</button><button class="row-btn del" data-act="del" data-idx="56">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9614</td><td><button class="row-btn" data-act="edit" data-idx="57">editar</button><button class="row-btn del" data-act="del" data-idx="57">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.1275</td><td><button class="row-btn" data-act="edit" data-idx="51">editar</button><button class="row-btn del" data-act="del" data-idx="51">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A3</td><td>Renovação da frota</td><td>0.8868</td><td><button class="row-btn" data-act="edit" data-idx="54">editar</button><button class="row-btn del" data-act="del" data-idx="54">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3467</td><td><button class="row-btn" data-act="edit" data-idx="52">editar</button><button class="row-btn del" data-act="del" data-idx="52">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1901</td><td><button class="row-btn" data-act="edit" data-idx="53">editar</button><button class="row-btn del" data-act="del" data-idx="53">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.9310</td><td><button class="row-btn" data-act="edit" data-idx="50">editar</button><button class="row-btn del" data-act="del" data-idx="50">excluir</button></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="59">editar</button><button class="row-btn del" data-act="del" data-idx="59">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="65">editar</button><button class="row-btn del" data-act="del" data-idx="65">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="68">editar</button><button class="row-btn del" data-act="del" data-idx="68">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1332</td><td><button class="row-btn" data-act="edit" data-idx="66">editar</button><button class="row-btn del" data-act="del" data-idx="66">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9052</td><td><button class="row-btn" data-act="edit" data-idx="67">editar</button><button class="row-btn del" data-act="del" data-idx="67">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.1201</td><td><button class="row-btn" data-act="edit" data-idx="61">editar</button><button class="row-btn del" data-act="del" data-idx="61">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A3</td><td>Renovação da frota</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="64">editar</button><button class="row-btn del" data-act="del" data-idx="64">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3234</td><td><button class="row-btn" data-act="edit" data-idx="62">editar</button><button class="row-btn del" data-act="del" data-idx="62">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1773</td><td><button class="row-btn" data-act="edit" data-idx="63">editar</button><button class="row-btn del" data-act="del" data-idx="63">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.4243</td><td><button class="row-btn" data-act="edit" data-idx="60">editar</button><button class="row-btn del" data-act="del" data-idx="60">excluir</button></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="69">editar</button><button class="row-btn del" data-act="del" data-idx="69">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="75">editar</button><button class="row-btn del" data-act="del" data-idx="75">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="78">editar</button><button class="row-btn del" data-act="del" data-idx="78">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1183</td><td><button class="row-btn" data-act="edit" data-idx="76">editar</button><button class="row-btn del" data-act="del" data-idx="76">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.8472</td><td><button class="row-btn" data-act="edit" data-idx="77">editar</button><button class="row-btn del" data-act="del" data-idx="77">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.1201</td><td><button class="row-btn" data-act="edit" data-idx="71">editar</button><button class="row-btn del" data-act="del" data-idx="71">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A3</td><td>Renovação da frota</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="74">editar</button><button class="row-btn del" data-act="del" data-idx="74">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3234</td><td><button class="row-btn" data-act="edit" data-idx="72">editar</button><button class="row-btn del" data-act="del" data-idx="72">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1773</td><td><button class="row-btn" data-act="edit" data-idx="73">editar</button><button class="row-btn del" data-act="del" data-idx="73">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.4243</td><td><button class="row-btn" data-act="edit" data-idx="70">editar</button><button class="row-btn del" data-act="del" data-idx="70">excluir</button></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="79">editar</button><button class="row-btn del" data-act="del" data-idx="79">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="85">editar</button><button class="row-btn del" data-act="del" data-idx="85">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="88">editar</button><button class="row-btn del" data-act="del" data-idx="88">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="86">editar</button><button class="row-btn del" data-act="del" data-idx="86">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="87">editar</button><button class="row-btn del" data-act="del" data-idx="87">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="81">editar</button><button class="row-btn del" data-act="del" data-idx="81">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A3</td><td>Renovação da frota</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="84">editar</button><button class="row-btn del" data-act="del" data-idx="84">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="82">editar</button><button class="row-btn del" data-act="del" data-idx="82">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="83">editar</button><button class="row-btn del" data-act="del" data-idx="83">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.4243</td><td><button class="row-btn" data-act="edit" data-idx="80">editar</button><button class="row-btn del" data-act="del" data-idx="80">excluir</button></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="89">editar</button><button class="row-btn del" data-act="del" data-idx="89">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="95">editar</button><button class="row-btn del" data-act="del" data-idx="95">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="98">editar</button><button class="row-btn del" data-act="del" data-idx="98">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="96">editar</button><button class="row-btn del" data-act="del" data-idx="96">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="97">editar</button><button class="row-btn del" data-act="del" data-idx="97">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="91">editar</button><button class="row-btn del" data-act="del" data-idx="91">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A3</td><td>Renovação da frota</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="94">editar</button><button class="row-btn del" data-act="del" data-idx="94">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="92">editar</button><button class="row-btn del" data-act="del" data-idx="92">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.0000</td><td><button class="row-btn" data-act="edit" data-idx="93">editar</button><button class="row-btn del" data-act="del" data-idx="93">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.2882</td><td><button class="row-btn" data-act="edit" data-idx="90">editar</button><button class="row-btn del" data-act="del" data-idx="90">excluir</button></td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td><td><button class="row-btn" data-act="edit" data-idx="99">editar</button><button class="row-btn del" data-act="del" data-idx="99">excluir</button></td></tr></tbody>
+</table>
+</div>
+</div><details class="params">
+<summary><span class="chev">▸</span> Tabela dinâmica — Soma de Valor por Classe e Vigência (réplica da aba "Tabela")</summary>
+<div class="params-body">
+<div class="prev-scroll">
+<table>
+<thead>
+<tr>
+<th>Vigência</th><th>A1</th><th>A2</th><th>A3</th><th>A4</th><th>B1</th><th>B2</th><th>B3</th><th>Total Geral</th>
+</tr>
+</thead>
+<tbody id="tblPivot"><tr><td>01/04/2023 a 28/12/2023</td><td>7.5882</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td><b>7.5882</b></td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>7.7243</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td><b>7.7243</b></td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>7.7243</td><td>0.5007</td><td>0.0000</td><td>0.1201</td><td>0.9655</td><td>0.0000</td><td>0.0000</td><td><b>9.3106</b></td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>7.7243</td><td>0.5007</td><td>0.0000</td><td>0.1201</td><td>1.0384</td><td>0.0000</td><td>0.0000</td><td><b>9.3835</b></td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>8.2310</td><td>0.5368</td><td>0.8868</td><td>0.1275</td><td>1.1028</td><td>0.0000</td><td>0.0000</td><td><b>10.8849</b></td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>8.2310</td><td>0.5368</td><td>0.8868</td><td>0.7360</td><td>1.1028</td><td>0.0000</td><td>0.0000</td><td><b>11.4934</b></td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>8.2310</td><td>0.5368</td><td>1.3385</td><td>0.7360</td><td>1.1028</td><td>0.0000</td><td>0.0000</td><td><b>11.9451</b></td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>8.4748</td><td>0.5548</td><td>1.3385</td><td>0.7592</td><td>1.1314</td><td>0.5653</td><td>0.0000</td><td><b>12.8240</b></td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>8.4748</td><td>0.5548</td><td>1.3385</td><td>0.7592</td><td>0.0794</td><td>0.5653</td><td>0.0000</td><td><b>11.7720</b></td></tr><tr><td>01/03/2026 - Atual</td><td>8.4748</td><td>0.5548</td><td>1.3385</td><td>0.7592</td><td>0.0794</td><td>0.5653</td><td>0.2296</td><td><b>12.0016</b></td></tr><tr class="total"><td>Total Geral</td><td>80.8785</td><td>4.2762</td><td>7.1276</td><td>4.1173</td><td>6.6025</td><td>1.6959</td><td>0.2296</td><td>104.9276</td></tr></tbody>
+</table>
+</div>
+</div>
+</details><details class="params">
+<summary><span class="chev">▸</span> Base de dados (aba "Base") — registros utilizados nos cálculos</summary>
+<div class="params-body">
+<div class="prev-scroll">
+<table>
+<thead><tr><th>Vigência</th><th>Classe</th><th>Complemento (Descrição)</th><th>Valor</th></tr></thead>
+<tbody id="tblBaseFull"><tr><td>01/03/2026 - Atual</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>4.1748</td></tr><tr><td>01/03/2026 - Atual</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7592</td></tr><tr><td>01/03/2026 - Atual</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3583</td></tr><tr><td>01/03/2026 - Atual</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1965</td></tr><tr><td>01/03/2026 - Atual</td><td>A3</td><td>Renovação da frota</td><td>1.3385</td></tr><tr><td>01/03/2026 - Atual</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.2296</td></tr><tr><td>01/03/2026 - Atual</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.0162</td></tr><tr><td>01/03/2026 - Atual</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.0632</td></tr><tr><td>01/03/2026 - Atual</td><td>B2</td><td>Investimentos em garagens</td><td>0.5653</td></tr><tr><td>01/03/2026 - Atual</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>4.1748</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7592</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3583</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1965</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A3</td><td>Renovação da frota</td><td>1.3385</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.0162</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.0632</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>B2</td><td>Investimentos em garagens</td><td>0.5653</td></tr><tr><td>01/02/2026 a 28/02/2026</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>4.1748</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7592</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3583</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1965</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A3</td><td>Renovação da frota</td><td>1.3385</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1451</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9863</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>B2</td><td>Investimentos em garagens</td><td>0.5653</td></tr><tr><td>01/01/2026 a 31/01/2026</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.9310</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7360</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3467</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1901</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A3</td><td>Renovação da frota</td><td>1.3385</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1414</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9614</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td></tr><tr><td>01/07/2025 a 31/12/2025</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.9310</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.7360</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3467</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1901</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A3</td><td>Renovação da frota</td><td>0.8868</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1414</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9614</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td></tr><tr><td>01/05/2025 a 30/06/2025</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.9310</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.1275</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3467</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1901</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A3</td><td>Renovação da frota</td><td>0.8868</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1414</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9614</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td></tr><tr><td>01/01/2025 a 30/04/2025</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.4243</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.1201</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3234</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1773</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A3</td><td>Renovação da frota</td><td>0.0000</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1332</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.9052</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td></tr><tr><td>02/09/2024 a 31/12/2024</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.4243</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.1201</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.3234</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.1773</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A3</td><td>Renovação da frota</td><td>0.0000</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.1183</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.8472</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td></tr><tr><td>01/02/2024 a 01/09/2024</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.4243</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.0000</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.0000</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.0000</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A3</td><td>Renovação da frota</td><td>0.0000</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.0000</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.0000</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td></tr><tr><td>29/12/2023 a 31/01/2024</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>3.2882</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A4</td><td>Adicional Onibus Elétrico</td><td>0.0000</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A2</td><td>Melhoria Pontos de Paradas de Ônibus</td><td>0.0000</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A2</td><td>Operação Manut. Estações BRT Norte - Sul</td><td>0.0000</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A3</td><td>Renovação da frota</td><td>0.0000</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>B3</td><td>Reserva financeira - baterias</td><td>0.0000</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>B1</td><td>Comissionamento de Obras BRT Norte - Sul</td><td>0.0000</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>B1</td><td>Obras BRT Leste - Oeste</td><td>0.0000</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>B2</td><td>Investimentos em garagens</td><td>0.0000</td></tr><tr><td>01/04/2023 a 28/12/2023</td><td>A1</td><td>Tarifa Usuario</td><td>4.3000</td></tr></tbody>
+</table>
+</div>
+</div>
+</details></div><footer>
+<span>HP Mobilidade · Acompanhamento Evolutivo Tarifa</span>
+<span id="footVig">Vigência ativa: 01/03/2026 - Atual</span>
+</footer></div>
+<script>
+/* =========================================================================
+   BASE DE DADOS (réplica fiel da aba "Base" da planilha)
+   Colunas: Vigencia | Classe | Descrição (Complemento) | Valor
+   ========================================================================= */
+const BASE_ORIGINAL = [{"vigencia": "01/03/2026 - Atual", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 4.1748}, {"vigencia": "01/03/2026 - Atual", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.7592}, {"vigencia": "01/03/2026 - Atual", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.3583}, {"vigencia": "01/03/2026 - Atual", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.1965}, {"vigencia": "01/03/2026 - Atual", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 1.3385}, {"vigencia": "01/03/2026 - Atual", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.2296}, {"vigencia": "01/03/2026 - Atual", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.0162}, {"vigencia": "01/03/2026 - Atual", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.0632}, {"vigencia": "01/03/2026 - Atual", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.5653}, {"vigencia": "01/03/2026 - Atual", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 4.1748}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.7592}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.3583}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.1965}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 1.3385}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.0}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.0162}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.0632}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.5653}, {"vigencia": "01/02/2026 a 28/02/2026", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 4.1748}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.7592}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.3583}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.1965}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 1.3385}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.0}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.1451}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.9863}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.5653}, {"vigencia": "01/01/2026 a 31/01/2026", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 3.931}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.736}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.3467}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.1901}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 1.3385}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.0}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.1414}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.9614}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.0}, {"vigencia": "01/07/2025 a 31/12/2025", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 3.931}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.736}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.3467}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.1901}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 0.8868}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.0}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.1414}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.9614}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.0}, {"vigencia": "01/05/2025 a 30/06/2025", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 3.931}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.1275}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.3467}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.1901}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 0.8868}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.0}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.1414}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.9614}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.0}, {"vigencia": "01/01/2025 a 30/04/2025", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 3.4243}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.1201}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.3234}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.1773}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 0.0}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.0}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.1332}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.9052}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.0}, {"vigencia": "02/09/2024 a 31/12/2024", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 3.4243}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.1201}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.3234}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.1773}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 0.0}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.0}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.1183}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.8472}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.0}, {"vigencia": "01/02/2024 a 01/09/2024", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 3.4243}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.0}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.0}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.0}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 0.0}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.0}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.0}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.0}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.0}, {"vigencia": "29/12/2023 a 31/01/2024", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "A1", "descricao": "Complemento Tarifa de Remunera\u00e7\u00e3o", "valor": 3.2882}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "A4", "descricao": "Adicional Onibus El\u00e9trico", "valor": 0.0}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "A2", "descricao": "Melhoria Pontos de Paradas de \u00d4nibus", "valor": 0.0}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "A2", "descricao": "Opera\u00e7\u00e3o Manut. Esta\u00e7\u00f5es BRT Norte - Sul", "valor": 0.0}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "A3", "descricao": "Renova\u00e7\u00e3o da frota", "valor": 0.0}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "B3", "descricao": "Reserva financeira - baterias", "valor": 0.0}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "B1", "descricao": "Comissionamento de Obras BRT Norte - Sul", "valor": 0.0}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "B1", "descricao": "Obras BRT Leste - Oeste", "valor": 0.0}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "B2", "descricao": "Investimentos em garagens", "valor": 0.0}, {"vigencia": "01/04/2023 a 28/12/2023", "classe": "A1", "descricao": "Tarifa Usuario", "valor": 4.3}];
+
+/* BASE é a cópia de trabalho (editável). Tenta carregar do localStorage;
+   se não houver nada salvo, usa a base original da planilha. */
+const STORAGE_KEY = "hp_tarifa_base_v1";
+let BASE = [];
+try{
+  const saved = localStorage.getItem(STORAGE_KEY);
+  BASE = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(BASE_ORIGINAL));
+}catch(e){
+  BASE = JSON.parse(JSON.stringify(BASE_ORIGINAL));
+}
+
+function persistBase(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(BASE)); }catch(e){}
+}
+
+/* Ordem original de vigências conforme dropdown da célula D3 (lista $X$3:$X$12),
+   usada apenas como referência de ordenação inicial — após edições, a lista
+   é sempre recalculada dinamicamente a partir da BASE atual (ver getVigenciasDropdown()) */
+const VIGENCIAS_DROPDOWN_ORIGINAL = [
+  "01/03/2026 - Atual",
+  "01/02/2026 a 28/02/2026",
+  "01/01/2026 a 31/01/2026",
+  "01/07/2025 a 31/12/2025",
+  "01/05/2025 a 30/06/2025",
+  "01/01/2025 a 30/04/2025",
+  "02/09/2024 a 31/12/2024",
+  "01/02/2024 a 01/09/2024",
+  "29/12/2023 a 31/01/2024",
+  "01/04/2023 a 28/12/2023"
+];
+
+/* Extrai uma data "âncora" (início de vigência) de um texto de vigência,
+   para permitir ordenação cronológica mesmo com vigências novas inseridas
+   pelo usuário. Aceita formatos "dd/mm/aaaa a dd/mm/aaaa" e "dd/mm/aaaa - Atual" */
+function vigenciaAnchorDate(vig){
+  const m = String(vig).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if(!m) return new Date(0);
+  return new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1]));
+}
+
+/* Lista de vigências únicas presentes na BASE atual, ordenadas da mais
+   recente para a mais antiga (mesmo critério do dropdown da planilha) */
+function getVigenciasDropdown(){
+  const unicas = [...new Set(BASE.map(r=>r.vigencia))];
+  unicas.sort((a,b)=> vigenciaAnchorDate(b) - vigenciaAnchorDate(a));
+  return unicas;
+}
+
+let VIGENCIAS_DROPDOWN = getVigenciasDropdown();
+let VIGENCIAS_CRONO = [...VIGENCIAS_DROPDOWN].reverse();
+
+function refreshVigenciaLists(){
+  VIGENCIAS_DROPDOWN = getVigenciasDropdown();
+  VIGENCIAS_CRONO = [...VIGENCIAS_DROPDOWN].reverse();
+}
+
+/* =========================================================================
+   ESTRUTURA FIXA DAS PARCELAS (réplica das linhas C8:K11 / C17:K18 do Resumo)
+   ========================================================================= */
+const ESTRUTURA_A = [
+  {classe:"A2", desc:"Melhoria Pontos de Paradas de Ônibus"},
+  {classe:"A2", desc:"Operação Manut. Estações BRT Norte - Sul"},
+  {classe:"A3", desc:"Renovação da frota"},
+  {classe:"A4", desc:"Adicional Onibus Elétrico"}
+];
+const ESTRUTURA_B = [
+  {classe:"B1", desc:"Comissionamento de Obras BRT Norte - Sul"},
+  {classe:"B1", desc:"Obras BRT Leste - Oeste"},
+  {classe:"B2", desc:"Investimentos em garagens"},
+  {classe:"B3", desc:"Reserva financeira - baterias"}
+];
+const ESTRUTURA_A1 = [
+  {classe:"A1", desc:"Complemento Tarifa de Remuneração"},
+  {classe:"A1", desc:"Tarifa Usuario"}
+];
+
+/* Alíquotas HP (fixas, conforme caixa "Alíquotas" do painel original) */
+const ALIQ_USUARIO = 0.838;      // %HP aplicado sobre Tarifa Usuário
+const ALIQ_COMPLEMENTO = 0.838;  // %HP aplicado sobre Complemento (Tar. Remuneração)
+const ALIQ_PARCELA_A = 0;        // %HP aplicado sobre Parcela A
+const ALIQ_PARCELA_B = 0.978;    // %HP aplicado sobre Parcela B
+
+/* =========================================================================
+   FUNÇÃO CHAVE: réplica de =VLOOKUP($A8,Base!$B$3:$E$150,4,0)
+   A planilha concatena Vigência + Descrição para formar a chave de busca
+   (=CONCATENATE($D$3,D8)) e procura na coluna "Cod" da Base.
+   Aqui fazemos o mesmo, buscando por vigência + descrição na BASE.
+   ========================================================================= */
+function vlookup(vigencia, descricao){
+  const item = BASE.find(r => r.vigencia === vigencia && r.descricao === descricao);
+  return item ? item.valor : 0;
+}
+
+function fmt(v){
+  return "R$ " + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:4, maximumFractionDigits:4});
+}
+function fmtPct(v){
+  return (v*100).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) + "%";
+}
+
+/* =========================================================================
+   CÁLCULO PRINCIPAL — réplica completa das fórmulas da aba "Resumo"
+   ========================================================================= */
+function calcular(vigencia){
+  // ---- Parcela A (F8:F11) = VLOOKUP por linha; G8 = SUM(F8:F11) ----
+  const parcelaA = ESTRUTURA_A.map(r => ({...r, valor: vlookup(vigencia, r.desc)}));
+  const totalParcelaA = parcelaA.reduce((s,r)=>s+r.valor,0); // G8
+
+  // ---- Parcela B (M8:M11) = VLOOKUP por linha; N8 = SUM(M8:M11) ----
+  const parcelaB = ESTRUTURA_B.map(r => ({...r, valor: vlookup(vigencia, r.desc)}));
+  const totalParcelaB = parcelaB.reduce((s,r)=>s+r.valor,0); // N8
+
+  // ---- Parcela A1 (F17:F18) = VLOOKUP; G17 = SUM(F17:F18) ----
+  const complementoRemuneracao = vlookup(vigencia, "Complemento Tarifa de Remuneração"); // F17
+  const tarifaUsuario = vlookup(vigencia, "Tarifa Usuario"); // F18
+  const totalParcelaA1 = complementoRemuneracao + tarifaUsuario; // G17 = SUM(F17:F18)
+
+  // ---- Tarifa para Equivalência Tarifária ----
+  // M17 = G17 (Tar. Remuneração e Tar. Usuario) ; M18 = G8 (Demais A's) ; N17 = SUM(M17:M18)
+  const equivRemuneracaoUsuario = totalParcelaA1; // M17 = G17
+  const equivDemaisAs = totalParcelaA;            // M18 = G8
+  const totalEquivalencia = equivRemuneracaoUsuario + equivDemaisAs; // N17
+
+  // ---- Composição Tarifa (F24:F34) ----
+  // F24 = F18 (Tarifa Usuario) ; F25 = F17 (Complemento Remuneração)
+  // F26..F29 = F8..F11 (Parcela A individual) ; F30..F33 = M8..M11 (Parcela B individual)
+  const compF24_TarifaUsuario = tarifaUsuario;          // = F18
+  const compF25_Complemento   = complementoRemuneracao; // = F17
+  const compParcelaA_itens = parcelaA.map(r=>r.valor);  // F26..F29
+  const compParcelaB_itens = parcelaB.map(r=>r.valor);  // F30..F33
+
+  const totalComposicao = compF24_TarifaUsuario + compF25_Complemento +
+    compParcelaA_itens.reduce((a,b)=>a+b,0) + compParcelaB_itens.reduce((a,b)=>a+b,0); // F34
+
+  // G24 = F24/F34 ; G25 = SUM(F25:F33)/F34
+  const pctUsuario = totalComposicao !== 0 ? compF24_TarifaUsuario/totalComposicao : 0; // G24
+  const somaComplementoEoutros = compF25_Complemento + compParcelaA_itens.reduce((a,b)=>a+b,0) + compParcelaB_itens.reduce((a,b)=>a+b,0);
+  const pctComplemento = totalComposicao !== 0 ? somaComplementoEoutros/totalComposicao : 0; // G25
+
+  // ---- Equivalência Tarifária / Vl Liq HP (K22:N27) ----
+  // L23=F18(Usuario) M23=83,8% N23=L23*M23
+  // L24=F17(Complemento) M24=83,8% N24=L24*M24
+  // L25=G8(Parcela A) M25=0% N25=L25*M25
+  // L26=N8(Parcela B) M26=97,8% N26=L26*M26
+  // L27=SUM(L23:L26) N27=SUM(N23:N26)
+  const eq_usuario = { tipo:"Usuario", vlBruto: tarifaUsuario, pctHP: ALIQ_USUARIO, vlLiq: tarifaUsuario*ALIQ_USUARIO };
+  const eq_complemento = { tipo:"Complemento", vlBruto: complementoRemuneracao, pctHP: ALIQ_COMPLEMENTO, vlLiq: complementoRemuneracao*ALIQ_COMPLEMENTO };
+  const eq_parcelaA = { tipo:"Parcela A", vlBruto: totalParcelaA, pctHP: ALIQ_PARCELA_A, vlLiq: totalParcelaA*ALIQ_PARCELA_A };
+  const eq_parcelaB = { tipo:"Parcela B", vlBruto: totalParcelaB, pctHP: ALIQ_PARCELA_B, vlLiq: totalParcelaB*ALIQ_PARCELA_B };
+  const eq_vlBrutoTotal = eq_usuario.vlBruto + eq_complemento.vlBruto + eq_parcelaA.vlBruto + eq_parcelaB.vlBruto; // L27
+  const eq_vlLiqTotal = eq_usuario.vlLiq + eq_complemento.vlLiq + eq_parcelaA.vlLiq + eq_parcelaB.vlLiq; // N27
+
+  return {
+    parcelaA, totalParcelaA,
+    parcelaB, totalParcelaB,
+    complementoRemuneracao, tarifaUsuario, totalParcelaA1,
+    equivRemuneracaoUsuario, equivDemaisAs, totalEquivalencia,
+    compF24_TarifaUsuario, compF25_Complemento, compParcelaA_itens, compParcelaB_itens,
+    totalComposicao, pctUsuario, pctComplemento,
+    eq_usuario, eq_complemento, eq_parcelaA, eq_parcelaB, eq_vlBrutoTotal, eq_vlLiqTotal
+  };
+}
+
+/* =========================================================================
+   RENDER
+   ========================================================================= */
+function renderParcela(tbodyId, itens, sumValorEl, totalVal){
+  const tb = document.getElementById(tbodyId);
+  tb.innerHTML = "";
+  itens.forEach(r=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${r.classe}</td><td>${r.desc}</td><td>${fmt(r.valor)}</td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById(sumValorEl).textContent = fmt(totalVal);
+}
+
+function renderDonut(pctUsuario, pctComplemento, totalComposicao, vlLiqTotal){
+  const svg = document.getElementById("donutSvg");
+  const r = 80, cx=100, cy=100, sw=26;
+  const circ = 2*Math.PI*r;
+  const userLen = circ*pctUsuario;
+  const compLen = circ*pctComplemento;
+  svg.innerHTML = `
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#dfe6f5" stroke-width="${sw}"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#8295A6" stroke-width="${sw}"
+      stroke-dasharray="${userLen} ${circ-userLen}" stroke-dashoffset="0" transform="rotate(-90 ${cx} ${cy})"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#003BC1" stroke-width="${sw}"
+      stroke-dasharray="${compLen} ${circ-compLen}" stroke-dashoffset="-${userLen}" transform="rotate(-90 ${cx} ${cy})"/>
+    <text x="${cx}" y="${cy-14}" class="donut-center" font-size="9" fill="#8295A6" text-anchor="middle">TAR. TOTAL</text>
+    <text x="${cx}" y="${cy+2}" class="donut-center" font-size="15" font-weight="700" fill="#002577" text-anchor="middle">${fmt(totalComposicao)}</text>
+    <text x="${cx}" y="${cy+18}" class="donut-center" font-size="9" fill="#8295A6" text-anchor="middle">TAR. LIQ.</text>
+    <text x="${cx}" y="${cy+34}" class="donut-center" font-size="12" font-weight="600" fill="#00CFA2" text-anchor="middle">${fmt(vlLiqTotal)}</text>
+  `;
+}
+
+function renderEvoChart(){
+  const svg = document.getElementById("evoChart");
+  const W=1200,H=460, padL=70, padR=30, padT=30, padB=70;
+  const n = VIGENCIAS_CRONO.length;
+  const barW = (W-padL-padR)/n*0.55;
+  const gap = (W-padL-padR)/n;
+
+  // calcular série por vigência
+  const series = VIGENCIAS_CRONO.map(vig=>{
+    const c = calcular(vig);
+    const usuario = c.tarifaUsuario;
+    const complemento = c.complementoRemuneracao;
+    const parcelaB = c.totalParcelaB;
+    return {vig, usuario, complemento, parcelaB, total: usuario+complemento+parcelaB};
+  });
+
+  const maxTotal = Math.max(...series.map(s=>s.total)) * 1.15;
+  const scaleY = (H-padT-padB)/maxTotal;
+
+  let svgContent = "";
+  // grid lines
+  for(let i=0;i<=4;i++){
+    const y = padT + (H-padT-padB) - (i*(H-padT-padB)/4);
+    svgContent += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#eef2ff" stroke-width="1"/>`;
+    svgContent += `<text x="${padL-10}" y="${y+4}" font-size="10" fill="#8295A6" text-anchor="end">R$ ${(i*maxTotal/4).toFixed(2)}</text>`;
+  }
+
+  series.forEach((s,i)=>{
+    const x = padL + i*gap + (gap-barW)/2;
+    let yCursor = H-padB;
+    // usuario (cinza)
+    const hUser = s.usuario*scaleY;
+    svgContent += `<rect x="${x}" y="${yCursor-hUser}" width="${barW}" height="${hUser}" fill="#8295A6" rx="2"/>`;
+    svgContent += `<text x="${x+barW/2}" y="${yCursor-hUser/2+4}" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ ${s.usuario.toFixed(4)}</text>`;
+    yCursor -= hUser;
+    // complemento (azul)
+    const hComp = s.complemento*scaleY;
+    svgContent += `<rect x="${x}" y="${yCursor-hComp}" width="${barW}" height="${hComp}" fill="#003BC1" rx="2"/>`;
+    if(hComp>14) svgContent += `<text x="${x+barW/2}" y="${yCursor-hComp/2+4}" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="600">R$ ${s.complemento.toFixed(4)}</text>`;
+    yCursor -= hComp;
+    // parcela B (verde)
+    if(s.parcelaB>0){
+      const hPB = s.parcelaB*scaleY;
+      svgContent += `<rect x="${x}" y="${yCursor-hPB}" width="${barW}" height="${hPB}" fill="#00CFA2" rx="2"/>`;
+      if(hPB>14) svgContent += `<text x="${x+barW/2}" y="${yCursor-hPB/2+4}" font-size="9.5" fill="#002577" text-anchor="middle" font-weight="700">R$ ${s.parcelaB.toFixed(4)}</text>`;
+    }
+    // label eixo X
+    svgContent += `<text x="${x+barW/2}" y="${H-padB+18}" font-size="8.5" fill="#5a6a8a" text-anchor="middle" transform="rotate(0 ${x+barW/2} ${H-padB+18})">${s.vig.length>24? s.vig.substring(0,22)+'…' : s.vig}</text>`;
+  });
+
+  // legend
+  svgContent += `
+    <rect x="${padL}" y="${H-20}" width="10" height="10" fill="#8295A6" rx="2"/>
+    <text x="${padL+16}" y="${H-11}" font-size="10" fill="#5a6a8a">Usuário</text>
+    <rect x="${padL+90}" y="${H-20}" width="10" height="10" fill="#003BC1" rx="2"/>
+    <text x="${padL+106}" y="${H-11}" font-size="10" fill="#5a6a8a">Complemento</text>
+    <rect x="${padL+220}" y="${H-20}" width="10" height="10" fill="#00CFA2" rx="2"/>
+    <text x="${padL+236}" y="${H-11}" font-size="10" fill="#5a6a8a">Parcela B</text>
+  `;
+
+  svg.innerHTML = svgContent;
+}
+
+function renderPivot(){
+  const tb = document.getElementById("tblPivot");
+  tb.innerHTML = "";
+  let totals = {A1:0,A2:0,A3:0,A4:0,B1:0,B2:0,B3:0};
+  VIGENCIAS_CRONO.forEach(vig=>{
+    const rows = BASE.filter(r=>r.vigencia===vig);
+    const sums = {A1:0,A2:0,A3:0,A4:0,B1:0,B2:0,B3:0};
+    rows.forEach(r=>{ if(sums[r.classe]!==undefined) sums[r.classe]+=r.valor; });
+    const total = Object.values(sums).reduce((a,b)=>a+b,0);
+    Object.keys(totals).forEach(k=>totals[k]+=sums[k]);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${vig}</td><td>${sums.A1.toFixed(4)}</td><td>${sums.A2.toFixed(4)}</td><td>${sums.A3.toFixed(4)}</td><td>${sums.A4.toFixed(4)}</td><td>${sums.B1.toFixed(4)}</td><td>${sums.B2.toFixed(4)}</td><td>${sums.B3.toFixed(4)}</td><td><b>${total.toFixed(4)}</b></td>`;
+    tb.appendChild(tr);
+  });
+  const totGeral = Object.values(totals).reduce((a,b)=>a+b,0);
+  const trT = document.createElement("tr");
+  trT.classList.add("total");
+  trT.innerHTML = `<td>Total Geral</td><td>${totals.A1.toFixed(4)}</td><td>${totals.A2.toFixed(4)}</td><td>${totals.A3.toFixed(4)}</td><td>${totals.A4.toFixed(4)}</td><td>${totals.B1.toFixed(4)}</td><td>${totals.B2.toFixed(4)}</td><td>${totals.B3.toFixed(4)}</td><td>${totGeral.toFixed(4)}</td>`;
+  tb.appendChild(trT);
+}
+
+function renderBaseFull(){
+  const tb = document.getElementById("tblBaseFull");
+  tb.innerHTML = "";
+  VIGENCIAS_CRONO.slice().reverse().forEach(vig=>{
+    BASE.filter(r=>r.vigencia===vig).forEach(r=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.vigencia}</td><td>${r.classe}</td><td>${r.descricao}</td><td>${r.valor.toFixed(4)}</td>`;
+      tb.appendChild(tr);
+    });
+  });
+}
+
+function render(vigencia){
+  const c = calcular(vigencia);
+
+  document.getElementById("vigBadge").textContent = vigencia;
+  document.getElementById("footVig").textContent = "Vigência ativa: " + vigencia;
+
+  // Parcela A / B
+  renderParcela("tblParcelaA", c.parcelaA, "totParcelaA", c.totalParcelaA);
+  renderParcela("tblParcelaB", c.parcelaB, "totParcelaB", c.totalParcelaB);
+
+  // Parcela A1
+  const tbA1 = document.getElementById("tblParcelaA1");
+  tbA1.innerHTML = `
+    <tr><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>${fmt(c.complementoRemuneracao)}</td></tr>
+    <tr><td>A1</td><td>Tarifa Usuario</td><td>${fmt(c.tarifaUsuario)}</td></tr>`;
+  document.getElementById("totParcelaA1").textContent = fmt(c.totalParcelaA1);
+
+  // Tarifa Equivalência
+  const tbEq = document.getElementById("tblEquivalencia");
+  tbEq.innerHTML = `
+    <tr><td>A1</td><td>Tar. de Remuneração e Tar. Usuario</td><td>${fmt(c.equivRemuneracaoUsuario)}</td></tr>
+    <tr><td>Demais A's</td><td>A2, A3 e A4</td><td>${fmt(c.equivDemaisAs)}</td></tr>`;
+  document.getElementById("totEquivalencia").textContent = fmt(c.totalEquivalencia);
+
+  // Composição Tarifa
+  const tbComp = document.getElementById("tblComposicao");
+  let rowsHtml = `
+    <tr><td>A1</td><td>Tarifa Usuario</td><td>Usuário</td><td>${fmt(c.compF24_TarifaUsuario)}</td><td>${fmtPct(c.pctUsuario)}</td></tr>
+    <tr><td>A1</td><td>Complemento Tarifa de Remuneração</td><td>Complemento</td><td>${fmt(c.compF25_Complemento)}</td><td rowspan="9" style="vertical-align:middle;background:#f8faff;">${fmtPct(c.pctComplemento)}</td></tr>`;
+  ESTRUTURA_A.forEach((r,i)=>{
+    rowsHtml += `<tr><td>${r.classe}</td><td>${r.desc}</td><td>Complemento</td><td>${fmt(c.compParcelaA_itens[i])}</td></tr>`;
+  });
+  ESTRUTURA_B.forEach((r,i)=>{
+    rowsHtml += `<tr><td>${r.classe}</td><td>${r.desc}</td><td>Complemento</td><td>${fmt(c.compParcelaB_itens[i])}</td></tr>`;
+  });
+  rowsHtml += `<tr class="total"><td colspan="3">Total</td><td>${fmt(c.totalComposicao)}</td><td>100,00%</td></tr>`;
+  tbComp.innerHTML = rowsHtml;
+
+  // Donut
+  renderDonut(c.pctUsuario, c.pctComplemento, c.totalComposicao, c.eq_vlLiqTotal);
+
+  // Equivalência HP
+  const tbEqHP = document.getElementById("tblEquivHP");
+  tbEqHP.innerHTML = `
+    <tr><td>Usuario</td><td>${fmt(c.eq_usuario.vlBruto)}</td><td>${fmtPct(c.eq_usuario.pctHP)}</td><td>${fmt(c.eq_usuario.vlLiq)}</td></tr>
+    <tr><td>Complemento</td><td>${fmt(c.eq_complemento.vlBruto)}</td><td>${fmtPct(c.eq_complemento.pctHP)}</td><td>${fmt(c.eq_complemento.vlLiq)}</td></tr>
+    <tr><td>Parcela A</td><td>${fmt(c.eq_parcelaA.vlBruto)}</td><td>${fmtPct(c.eq_parcelaA.pctHP)}</td><td>${fmt(c.eq_parcelaA.vlLiq)}</td></tr>
+    <tr><td>Parcela B</td><td>${fmt(c.eq_parcelaB.vlBruto)}</td><td>${fmtPct(c.eq_parcelaB.pctHP)}</td><td>${fmt(c.eq_parcelaB.vlLiq)}</td></tr>
+    <tr class="tarifa-total"><td>Tarifa Total</td><td>${fmt(c.eq_vlBrutoTotal)}</td><td>-</td><td>${fmt(c.eq_vlLiqTotal)}</td></tr>`;
+
+  // KPIs
+  document.getElementById("kpiUsuario").textContent = fmt(c.tarifaUsuario);
+  document.getElementById("kpiTarifaTotal").textContent = fmt(c.eq_vlBrutoTotal);
+  document.getElementById("kpiTarifaLiq").textContent = fmt(c.eq_vlLiqTotal);
+  document.getElementById("kpiPctComplemento").textContent = fmtPct(c.pctComplemento);
+}
+
+/* =========================================================================
+   MÓDULO DE CADASTRO / ATUALIZAÇÃO DE DADOS (CRUD sobre BASE)
+   ========================================================================= */
+let editingIndex = null; // índice (na BASE) do registro em edição, ou null = novo registro
+
+function populateDatalists(){
+  const vigDL = document.getElementById("vigOptions");
+  vigDL.innerHTML = "";
+  getVigenciasDropdown().forEach(v=>{
+    const opt = document.createElement("option");
+    opt.value = v;
+    vigDL.appendChild(opt);
+  });
+
+  const descDL = document.getElementById("descOptions");
+  descDL.innerHTML = "";
+  const descs = [...new Set(BASE.map(r=>r.descricao))];
+  descs.forEach(d=>{
+    const opt = document.createElement("option");
+    opt.value = d;
+    descDL.appendChild(opt);
+  });
+}
+
+function showFormStatus(msg, isErr){
+  const el = document.getElementById("formStatus");
+  el.textContent = msg;
+  el.classList.remove("err");
+  if(isErr) el.classList.add("err");
+  el.classList.add("show");
+  clearTimeout(showFormStatus._t);
+  showFormStatus._t = setTimeout(()=>el.classList.remove("show"), 3000);
+}
+
+function clearFormEditState(){
+  editingIndex = null;
+  document.getElementById("editBanner").classList.remove("show");
+  document.getElementById("saveBtn").textContent = "Salvar registro";
+}
+
+function loadRecordIntoForm(idx){
+  const r = BASE[idx];
+  document.getElementById("inVigencia").value = r.vigencia;
+  document.getElementById("inClasse").value = r.classe;
+  document.getElementById("inDescricao").value = r.descricao;
+  document.getElementById("inValor").value = r.valor;
+  editingIndex = idx;
+  document.getElementById("editBanner").classList.add("show");
+  document.getElementById("saveBtn").textContent = "Atualizar registro";
+  document.querySelector(".form-card").scrollIntoView && document.querySelector(".form-card").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function deleteRecord(idx){
+  if(!confirm("Remover este registro da base?")) return;
+  BASE.splice(idx,1);
+  persistBase();
+  fullRefresh();
+  showFormStatus("Registro removido.", false);
+}
+
+function saveRecord(){
+  const vigencia = document.getElementById("inVigencia").value.trim();
+  const classe = document.getElementById("inClasse").value;
+  const descricao = document.getElementById("inDescricao").value.trim();
+  const valorStr = document.getElementById("inValor").value;
+
+  if(!vigencia || !descricao || valorStr===""){
+    showFormStatus("Preencha vigência, complemento (descrição) e valor.", true);
+    return;
+  }
+  const valor = parseFloat(valorStr.toString().replace(",", "."));
+  if(isNaN(valor)){
+    showFormStatus("Valor inválido.", true);
+    return;
+  }
+
+  if(editingIndex !== null){
+    BASE[editingIndex] = {vigencia, classe, descricao, valor};
+    showFormStatus("Registro atualizado com sucesso.", false);
+  } else {
+    // se já existir registro com a mesma chave (vigência+descrição), substitui (igual à lógica
+    // de VLOOKUP da planilha, que assume um único valor por vigência+descrição)
+    const existingIdx = BASE.findIndex(r=>r.vigencia===vigencia && r.descricao===descricao);
+    if(existingIdx >= 0){
+      BASE[existingIdx] = {vigencia, classe, descricao, valor};
+      showFormStatus("Já existia um registro para essa vigência/descrição — valor atualizado.", false);
+    } else {
+      BASE.push({vigencia, classe, descricao, valor});
+      showFormStatus("Novo registro adicionado.", false);
+    }
+  }
+
+  persistBase();
+  clearFormEditState();
+  document.getElementById("inValor").value = "";
+  fullRefresh();
+}
+
+function renderCrudTable(){
+  const tb = document.getElementById("tblCrud");
+  tb.innerHTML = "";
+  // ordena por vigência (mais recente primeiro) e depois por classe
+  const ordered = BASE.map((r,i)=>({...r, _idx:i}))
+    .sort((a,b)=> vigenciaAnchorDate(b.vigencia) - vigenciaAnchorDate(a.vigencia) || a.classe.localeCompare(b.classe));
+
+  ordered.forEach(r=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${r.vigencia}</td><td>${r.classe}</td><td>${r.descricao}</td><td>${r.valor.toFixed(4)}</td>
+      <td><button class="row-btn" data-act="edit" data-idx="${r._idx}">editar</button><button class="row-btn del" data-act="del" data-idx="${r._idx}">excluir</button></td>`;
+    tb.appendChild(tr);
+  });
+
+  tb.querySelectorAll("button[data-act='edit']").forEach(btn=>{
+    btn.addEventListener("click", ()=>loadRecordIntoForm(parseInt(btn.dataset.idx)));
+  });
+  tb.querySelectorAll("button[data-act='del']").forEach(btn=>{
+    btn.addEventListener("click", ()=>deleteRecord(parseInt(btn.dataset.idx)));
+  });
+}
+
+function exportBase(){
+  const blob = new Blob([JSON.stringify(BASE, null, 1)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "base_tarifa_" + new Date().toISOString().slice(0,10) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importBase(file){
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!Array.isArray(data)) throw new Error("Formato inválido");
+      const valid = data.every(r=> "vigencia" in r && "classe" in r && "descricao" in r && "valor" in r);
+      if(!valid) throw new Error("Estrutura inválida — esperado: vigencia, classe, descricao, valor");
+      BASE = data.map(r=>({vigencia:String(r.vigencia), classe:String(r.classe), descricao:String(r.descricao), valor:parseFloat(r.valor)}));
+      persistBase();
+      fullRefresh();
+      showFormStatus("Base importada com sucesso (" + BASE.length + " registros).", false);
+    }catch(err){
+      showFormStatus("Erro ao importar: " + err.message, true);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetBase(){
+  if(!confirm("Restaurar a base original da planilha? Todas as edições feitas neste navegador serão perdidas.")) return;
+  BASE = JSON.parse(JSON.stringify(BASE_ORIGINAL));
+  persistBase();
+  fullRefresh();
+  showFormStatus("Base original restaurada.", false);
+}
+
+/* Recalcula listas de vigência, repopula seletor/datalists, e re-renderiza
+   todo o painel — chamado sempre que a BASE é alterada */
+function fullRefresh(){
+  refreshVigenciaLists();
+  populateDatalists();
+
+  const sel = document.getElementById("vigSelect");
+  const currentVal = sel.value;
+  sel.innerHTML = "";
+  VIGENCIAS_DROPDOWN.forEach(v=>{
+    const opt = document.createElement("option");
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  });
+  // mantém a vigência selecionada se ainda existir, senão usa a mais recente
+  sel.value = VIGENCIAS_DROPDOWN.includes(currentVal) ? currentVal : VIGENCIAS_DROPDOWN[0];
+
+  render(sel.value);
+  renderEvoChart();
+  renderPivot();
+  renderBaseFull();
+  renderCrudTable();
+}
+
+/* INIT */
+function init(){
+  const sel = document.getElementById("vigSelect");
+  VIGENCIAS_DROPDOWN.forEach(v=>{
+    const opt = document.createElement("option");
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  });
+  sel.value = VIGENCIAS_DROPDOWN[0]; // default = vigência mais recente
+  sel.addEventListener("change", ()=>render(sel.value));
+
+  populateDatalists();
+  renderCrudTable();
+
+  document.getElementById("saveBtn").addEventListener("click", saveRecord);
+  document.getElementById("cancelEditBtn").addEventListener("click", ()=>{
+    clearFormEditState();
+    document.getElementById("inValor").value = "";
+  });
+  document.getElementById("exportBtn").addEventListener("click", exportBase);
+  document.getElementById("resetBtn").addEventListener("click", resetBase);
+  document.getElementById("importFile").addEventListener("change", (e)=>{
+    if(e.target.files && e.target.files[0]) importBase(e.target.files[0]);
+    e.target.value = "";
+  });
+
+  render(sel.value);
+  renderEvoChart();
+  renderPivot();
+  renderBaseFull();
+}
+init();
+</script>
+<script>
+function mostrarTela(tela){
+  const dashboard = document.getElementById('dashboardPage');
+  const cadastro = document.getElementById('cadastroPage');
+  const btnDashboard = document.getElementById('btnDashboard');
+  const btnCadastro = document.getElementById('btnCadastro');
+  if(!dashboard || !cadastro) return;
+  const abrirDashboard = tela === 'dashboard';
+  dashboard.classList.toggle('active', abrirDashboard);
+  cadastro.classList.toggle('active', !abrirDashboard);
+  if(btnDashboard) btnDashboard.classList.toggle('active', abrirDashboard);
+  if(btnCadastro) btnCadastro.classList.toggle('active', !abrirDashboard);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+<script>
+/* Mobile-safe boot: reforça a renderização quando o HTML é aberto por file:// no celular. */
+(function(){
+  function showMobileWarning(msg){
+    var el = document.getElementById('mobileWarning');
+    if(el){ el.classList.add('show'); if(msg) el.textContent = msg; }
+  }
+
+  window.addEventListener('error', function(ev){
+    showMobileWarning('Aviso: o navegador do celular bloqueou parte do JavaScript. Abra o arquivo diretamente no Google Chrome para carregar dados e gráficos.');
+  });
+
+  function safeBoot(){
+    try{
+      if(typeof BASE === 'undefined' || !Array.isArray(BASE) || BASE.length === 0){
+        if(typeof BASE_ORIGINAL !== 'undefined') BASE = JSON.parse(JSON.stringify(BASE_ORIGINAL));
+      }
+      if(typeof refreshVigenciaLists === 'function') refreshVigenciaLists();
+      else if(typeof init === 'function') init();
+
+      setTimeout(function(){
+        try{
+          var evo = document.getElementById('evoChart');
+          var donut = document.getElementById('donutSvg');
+          if(evo && !evo.innerHTML.trim() && typeof renderEvoChart === 'function') renderEvoChart();
+          var sel = document.getElementById('vigSelect');
+          if(donut && !donut.innerHTML.trim() && sel && typeof render === 'function') render(sel.value);
+        }catch(e){}
+      }, 250);
+    }catch(e){
+      showMobileWarning('Não foi possível renderizar automaticamente neste visualizador. Abra pelo Google Chrome ou hospede o HTML em um link web.');
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', safeBoot);
+  else safeBoot();
+})();
+</script>
+</body>
+</html>
